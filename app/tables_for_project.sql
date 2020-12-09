@@ -1,5 +1,11 @@
---TABLES SHOULD BE FIXED NOW...
---MIGHT STILL HAVE TO CHANGE THEM THOU
+--CHECKLIST
+
+--FORM VALIDATION
+--SLEEP.JS IN UTILS
+--KORJAA TIETOKANNAN COLUMNEJA TS. NOT NULL POIS...?
+
+
+
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
@@ -22,3 +28,4 @@ CREATE TABLE reports (
   quality_of_eating INTEGER NOT NULL CHECK (quality_of_eating > 0 AND quality_of_eating < 6),
   generic_mood_evening INTEGER NOT NULL CHECK (generic_mood_evening > 0 AND generic_mood_evening < 6)  
 );
+

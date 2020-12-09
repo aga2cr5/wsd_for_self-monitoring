@@ -1,11 +1,12 @@
 <%- include('./partials/header.ejs') %>
 <h1>Login</h1><br>
 <p>Fill in and submit the following form to login and use our awesome Self-Moneytoring(tm) web app.</p>
-<p>If you haven't already registered to this site, please, go to the registeration page.</p>
-<a href="/auth/register">Registeration</a><br><br>
-
+<a href="/auth/register">If you haven't already registered to this site, please, go to the registeration page.</a><br>
+<p id="otherwise">Otherwise go ahead, fill the god damn form already!</p>
 <form action="/auth/login" method="post">
+    <label for="email">Email</label>
     <input type="email" name="email" value="" id="email">
+    <label for="password">Password</label>
     <input type="password" name="password" id="password">
     <input type="submit" value="Submit">
 </form>

@@ -20,7 +20,7 @@ router.post('/auth/logout', authenticationController.logout);
 
 //reporting
 router.get('/behavior/reporting', reportController.showReports);
-router.post('behavior/reporting', reportController.addReport);
+router.post('/behavior/reporting', reportController.addReport);
 router.get('/behavior/summary', reportController.getSummary);//ei ole vielä tehty
 
 

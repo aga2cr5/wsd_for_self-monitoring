@@ -36,8 +36,9 @@ const login = async({request, response, session}) => {
     const result = await authenticationService.authenticate(email, password, session);
     if (result) {
         response.status = 401;
+        response.body = 'Authentication was not successful'
     } else {
-        response.body = 'Authentication successful!';
+        response.redirect('/behavior/reporting');
     }
 }
 
@@ -45,17 +46,16 @@ const login = async({request, response, session}) => {
 //tässä kohtaa funktio, jolla voi kirjata itsensä ulos sovelluksesta.
 //ei vielä päätetty täysin mihin päätyy siitä, joten laitetaan menemään root kansioon
 
-//tässä kokeillaan ensimmäisä kertaa sleep funktiota. jos toimii lisätään
+//tässä kokeillaan ensimmäistä kertaa sleep funktiota. jos toimii lisätään
 //muuallekin redirect kohtiin
 const logout = async({response, session}) => {
     await session.set('authenticated', false);
 
     response.status = 200;
-    response.body = 'Logged out successfully. Redirecting to "/" in 2 seconds.';
+    response.body = 'Logged out successfully';
 
-    setTimeout(function() {}, (2 * 1000));
-
-    response.redirect('/');
+    //lisää tähän joku sleep funktio ja sitten redirect
+    //response.redirect('/');
 }
 
 export { showRegisterForm, showLoginForm, login, register, logout };

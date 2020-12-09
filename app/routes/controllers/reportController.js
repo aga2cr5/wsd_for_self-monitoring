@@ -4,25 +4,35 @@ import * as reportService from "../../services/reportService.js";
 //tai sitten ne tulevat api kansioon....
 
 const showReports = async({render, session}) => {
-  const user_id = session.get('user_id');
-  render('reports.ejs', { reports: await reportService.getReports(user_id) });
+  const user_id = (await session.get('user')).id;
+  render('reports.ejs', {reports: await reportService.getReports(user_id)});
 }
 
 const addReport = async({response, request, session}) => {
-  const user_id = session.get('user_id');
+  const user_id = (await session.get('user')).id;
+
+
+  //date ei taida toimia. tähän jäit eilen yöllä
   const date = `${Date.prototype.getFullYear}-${Date.prototype.getMonth}-${Date.prototype.getDay}`;
+  console.log(date);
 
   const body = request.body();
   const params = await body.value;
+  //muista, että params.get() arvot ovat string typejä eli numerot täytyy
+  //muuttaa numeroiksi ennen tietokanta queryä.
+
+  //tietokanta on myös virheellinen, koska tällä hetkellä se ei salli,
+  //että osa columneista jää tyhjiksi jos lisätään vain osat rivin columneista
+
 
   //tarkista onko aamu vai ilta ja sen mukaan listää tietoja tietokantaan
+  //tämä taitaa nyt toimia... aamun ja illan tarkistus siis
   const morning_or_evening = params.get('morning_or_evening');
   //jos aamu
   if (morning_or_evening === 'morning') {
     const sleep_duration = params.get('sleep_duration');
     const sleep_quality = params.get('sleep_quality');
     const generic_mood_morning = params.get('generic_mood_morning');
-
     await reportService.setMorningReport(
                         date,
                         user_id,

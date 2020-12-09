@@ -1,0 +1,13 @@
+<%- include('./partials/header.ejs') %>
+<h1>Login</h1><br>
+<p>Fill in and submit the following form to login and use our awesome Self-Moneytoring(tm) web app.</p>
+<p>If you haven't already registered to this site, please, go to the registeration page.</p>
+<a href="/auth/register">Registeration</a><br><br>
+
+<form action="/auth/login" method="post">
+    <input type="email" name="email" value="" id="email">
+    <input type="password" name="password" id="password">
+    <input type="submit" value="Submit">
+</form>
+<%- include('./partials/footer.ejs') %>
+

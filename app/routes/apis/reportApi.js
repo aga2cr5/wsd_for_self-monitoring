@@ -1,15 +1,21 @@
 import * as reportService from "../../services/reportService.js";
-//import { };
+
 const getSummary = async({response, session}) => {
-    //user_id parametrin saa session objectista ---> sessiota ei ole vielä implementoitu
-    const user_id = session.get('user_id');
+    //MOLEMMAT FUNKTIOT OVAT AVOIMIA KAIKILLE, JOTEN NIIDEN EI PIDÄ
+    //ANTAA YHDEN HENKILÖN TIETOJA; VAAN KAIKKIEN TIETOTEJAN KESKIARVOT.
+    //GETSUMMARY ANTAA VIIMEISELTÄ SEITSEMÄLTÄ PÄIVÄLTÄ JA GETSUMMARYBYDATE
+    //TIETYLTÄ PÄIVÄLTÄ
+    
+    
+    const user_id = (await session.get('user')).id;
     response.body = await reportService.getReports(user_id);
+
 } 
 
 const getSummaryByDate = async({params, response, session}) => {
     //user_id parametrin saa session objectista ---> sessiota ei ole vielä implementoitu
-    const user_id = session.get('user_id')
-    const date = `${params.year}-${month}-${day}`;
+    const user_id = (await session.get('user')).id;
+    const date = `${params.year}-${params.month}-${params.day}`;
     response.body = await reportService.getOneReport(user_id, date);
 }
 

@@ -1,12 +1,22 @@
 <%- include('./partials/header.ejs') %>
 <h1>Reports</h1>
-
+<p>Logged in as <%= email %></p><br><br>
 <th>All them reports</th>
 <tr>
-    <% if (reports && reports.rowCount > 0) { %>
+    <% if (reports) { %>
     <% reports.forEach((report) => { %>
+        <td><%= report.id %></td>
         <td><%= report.report_date %></td>
-    <% }); %>
+        <td><%= report.user_id %></td>
+        <td><%= report.sleep_duration %></td>
+        <td><%= report.sleep_quality %></td>
+        <td><%= report.generic_mood_morning %></td>
+        <td><%= report.time_spent_on_sports_n_exercise %></td>
+        <td><%= report.time_spent_studying %></td>
+        <td><%= report.regularity_of_eating %></td>
+        <td><%= report.quality_of_eating %></td>
+        <td><%= report.generic_mood_evening %></td>
+        <% }); %>
     <% } %>
 </tr><br><br>
 

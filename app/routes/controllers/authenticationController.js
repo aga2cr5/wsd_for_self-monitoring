@@ -1,24 +1,36 @@
 import * as authenticationService from "../../services/authenticationService.js";
 
+
+const registerData = {
+    email: '',
+    password: '',
+    verification: '',
+    errors: null
+};
+
+
+const loginData = {
+    email: '',
+    password: '',
+    authentication: '',
+    errors: null
+};
+
+
 const showRegisterForm = ({render}) => {
-    render('register.ejs');
+    render('register.ejs', registerData);
 }
+
 
 const showLoginForm = ({render}) => {
-    render('login.ejs');
+    render('login.ejs', loginData);
 }
 
-const register = async({request, response}) => {
-    const body = request.body();
-    const params = await body.value;
 
-    const email = params.get('email');
-    const password = params.get('password');
-    const verification = params.get('verification');
-
-    const result = await authenticationService.register(email, password, verification);
+const submitRegisterForm = async({request, response, render}) => {
+    const result = await authenticationService.register(request);
     if (result) {
-        response.body = result;
+        render('register.ejs', result);
     } else {
         response.status = 200;
         response.body = 'Registration successful!';
@@ -26,36 +38,23 @@ const register = async({request, response}) => {
 }
 
 
-const login = async({request, response, session}) => {
-    const body = request.body();
-    const params = await body.value;
-
-    const email = params.get('email');
-    const password = params.get('password');
-
-    const result = await authenticationService.authenticate(email, password, session);
+const submitLoginForm = async({request, response, render, session}) => {
+    const result = await authenticationService.login(request, session);
     if (result) {
-        response.status = 401;
-        response.body = 'Authentication was not successful'
+        render('login.ejs', result);
     } else {
-        response.redirect('/behavior/reporting');
+        response.status = 200;
+        response.redirect('/landing');
     }
 }
 
 
-//tässä kohtaa funktio, jolla voi kirjata itsensä ulos sovelluksesta.
-//ei vielä päätetty täysin mihin päätyy siitä, joten laitetaan menemään root kansioon
-
-//tässä kokeillaan ensimmäistä kertaa sleep funktiota. jos toimii lisätään
-//muuallekin redirect kohtiin
-const logout = async({response, session}) => {
+const logout = async({response, params, session}) => {
     await session.set('authenticated', false);
+    await session.set('user', null);
 
     response.status = 200;
     response.body = 'Logged out successfully';
-
-    //lisää tähän joku sleep funktio ja sitten redirect
-    //response.redirect('/');
 }
 
-export { showRegisterForm, showLoginForm, login, register, logout };
+export { showRegisterForm, showLoginForm, submitLoginForm, submitRegisterForm, logout };

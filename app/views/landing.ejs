@@ -1,0 +1,14 @@
+<%- include('./partials/header.ejs') %>
+<h1>Welcome to Self-Moneytoring</h1>
+<p>Logged in as <%= email %></p>
+
+<form action="/auth/logout/<%= user_id %>" method="POST">
+    <fieldset>
+            <input class="btn btn-primary" type="submit" value="Logout">
+    </fieldset>
+</form>
+
+<p>You might want to do some reporting while you're at it...</p>
+<a href="/behavior/reporting">Reporting</a>
+
+<%- include('./partials/footer.ejs') %>

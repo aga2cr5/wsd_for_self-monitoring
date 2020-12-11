@@ -1,65 +1,118 @@
 <%- include('./partials/header.ejs') %>
-<h1>Reports</h1>
-<p>Logged in as <%= email %></p><br><br>
-<th>All them reports</th>
-<tr>
-    <% if (reports) { %>
-    <% reports.forEach((report) => { %>
-        <td><%= report.id %></td>
-        <td><%= report.report_date %></td>
-        <td><%= report.user_id %></td>
-        <td><%= report.sleep_duration %></td>
-        <td><%= report.sleep_quality %></td>
-        <td><%= report.generic_mood_morning %></td>
-        <td><%= report.time_spent_on_sports_n_exercise %></td>
-        <td><%= report.time_spent_studying %></td>
-        <td><%= report.regularity_of_eating %></td>
-        <td><%= report.quality_of_eating %></td>
-        <td><%= report.generic_mood_evening %></td>
-        <% }); %>
-    <% } %>
-</tr><br><br>
-
-<h2>Add reports</h2>
-
-<label form="morning"><b>Morning</b></label>
-<form action="/behavior/reporting" method="POST" id="morning"><br>
-
-    <label for="sleep_duration">Sleep duration (h)</label>
-    <input type="number" name="sleep_duration" id="sleep_duration" min="0" max="24" step="0.1"><br><br>
-
-    <label for="sleep_quality">Sleep quality (between 1-5)</label>
-    <input type="number" name="sleep_quality" id="sleep_quality" min="1" max="5"><br><br>
+<div class="container">
+    <h1>Reports</h1>
+    <p>Logged in as <%= email %></p>
     
-    <label for="generic_mood_morning">Generic mood (between 1-5)</label>
-    <input type="number" name="generic_mood_morning" id="generic_mood_morning" min="1" max="5"><br><br>
+
+    <form action="/auth/logout/<%= user_id %>" method="POST">
+        <fieldset>
+            <input class="btn btn-primary" type="submit" value="Logout">
+        </fieldset>
+    </form><br>
     
-    <input type="hidden" name="morning_or_evening" value="morning">
-    <input type="submit" value="Submit">
-</form>
+        <table class="table">
+            <caption id="otherwise">You are what you report ^.^</caption>
+            <thead>
+                <tr>
+                    <th>Reporting date</th>
+                    <th>Sleep duration</th>
+                    <th>Sleep quality</th>
+                    <th>Morning mood</th>
+                    <th>Sport and Exercise</th>
+                    <th>Studying</th>
+                    <th>Regularity of eating</th>
+                    <th>Quality of eating</th>
+                    <th>Evening mood</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% if (reports) { %>
+                <% reports.forEach((report) => { %>
+                    <tr> <% const date = (String(report.report_date)).split('00'); %>
+                        <td><%= date[0] %></td>
+                        <td><%= report.sleep_duration %></td>
+                        <td><%= report.sleep_quality %></td>
+                        <td><%= report.generic_mood_morning %></td>
+                        <td><%= report.time_spent_on_sports_n_exercise %></td>
+                        <td><%= report.time_spent_studying %></td>
+                        <td><%= report.regularity_of_eating %></td>
+                        <td><%= report.quality_of_eating %></td>
+                        <td><%= report.generic_mood_evening %></td>
+                    </tr>
+                <% }); %>
+            <% } %>
+            </tbody>
+        </table>
+    
+    <h2>Add reports</h2>
+    
+    <label form="morning"><b>Morning</b></label>
+    <form action="/behavior/reporting" method="POST" id="morning">
+        <fieldset>
+            <div class="form-group">
 
-<br><br><br>
+                <label for="sleep_duration">Sleep duration (h)</label>
+                <input class="form-control" type="number" name="sleep_duration" id="sleep_duration" min="0" max="24" step="0.1">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'duration'}) %>
+            
+                <label for="sleep_quality">Sleep quality (between 1-5)</label>
+                <input class="form-control" type="number" name="sleep_quality" id="sleep_quality" min="1" max="5">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'quality'}) %>
+                
+                <label for="generic_mood_morning">Generic mood (between 1-5)</label>
+                <input class="form-control" type="number" name="generic_mood_morning" id="generic_mood_morning" min="1" max="5">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'mood'}) %>
+                
+                <label for="date">Date (to submit report for passed date enter date else leave blank)</label>
+                <input class="form-control" type="date" name="date" id="date">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'date'}) %>
 
-<label form="evening"><b>Evening</b></label>
-<form action="/behavior/reporting" method="POST" id="evening"><br>
+                <input type="hidden" name="morning_or_evening" value="morning">
+                
+            </div>
 
-    <label for="time_spent_on_sports_n_exercise">Time spent on sports and exercise (h)</label>
-    <input type="number" name="time_spent_on_sports_n_exercise" id="time_spent_on_sports_n_exercise" min="0" max="24" step="0.1"><br><br>
+            <input class="btn btn-primary" type="submit" value="Submit">
 
-    <label for="time_spent_studying">Time spent studying (h)</label>
-    <input type="number" name="time_spent_studying" id="time_spent_studying" min="0" max="24" step="0.1"><br><br>
+        </fieldset>
+    </form>
 
-    <label for="regularity_of_eating">Regularity of eating (between 1-5)</label>
-    <input type="number" name="regularity_of_eating" id="regularity_of_eating" min="1" max="5"><br><br>
+    <label form="evening"><b>Evening</b></label>
+    <form action="/behavior/reporting" method="POST" id="evening">
+        <fieldset>
+            <div class="form-group">
 
-    <label for="quality_of_eating">Quality of eating (between 1-5)</label>
-    <input type="number" name="quality_of_eating" id="quality_of_eating" min="1" max="5"><br><br>
+                <label for="time_spent_on_sports_n_exercise">Time spent on sports and exercise (h)</label>
+                <input class="form-control" type="number" name="time_spent_on_sports_n_exercise" id="time_spent_on_sports_n_exercise" min="0" max="24" step="0.1">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'time'}) %>
+            
+                <label for="time_spent_studying">Time spent studying (h)</label>
+                <input class="form-control" type="number" name="time_spent_studying" id="time_spent_studying" min="0" max="24" step="0.1">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'duration'}) %>
+            
+                <label for="regularity_of_eating">Regularity of eating (between 1-5)</label>
+                <input class="form-control" type="number" name="regularity_of_eating" id="regularity_of_eating" min="1" max="5">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'regularity'}) %>
+            
+                <label for="quality_of_eating">Quality of eating (between 1-5)</label>
+                <input class="form-control" type="number" name="quality_of_eating" id="quality_of_eating" min="1" max="5">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'quality'}) %>
+            
+                <label for="generic_mood_evening">Generic mood (between 1-5)</label>
+                <input class="form-control" type="number" name="generic_mood_evening" id="generic_mood_evening" min="1" max="5">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'mood'}) %>
+                
+                <label for="date">Date (to submit report for passed date enter date else leave blank)</label>
+                <input class="form-control" type="date" name="date" id="date">
+                <%- include('./partials/errors.ejs', { errors: data.errors, attribute: 'date'}) %>
 
-    <label for="generic_mood_evening">Generic mood (between 1-5)</label>
-    <input type="number" name="generic_mood_evening" id="generic_mood_evening" min="1" max="5"><br><br>
+                <input type="hidden" name="morning_or_evening" value="evening">
 
-    <input type="hidden" name="morning_or_evening" value="evening">
-    <input type="submit" value="Submit">
-</form>
+            </div>
+
+            <input class="btn btn-primary" type="submit" value="Submit">
+
+        </fieldset>
+    </form>
+</div>
 
 <%- include('./partials/footer.ejs') %>

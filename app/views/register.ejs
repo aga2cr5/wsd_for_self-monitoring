@@ -3,13 +3,27 @@
 <p>Fill in the registeration form in order to get access to the Self-Moneytoring(tm) web app.</p>
 <a href="/auth/login">If you have already registered to this site, please, go to the login page.</a><br>
 <p id="otherwise">Otherwise go ahead, fill the god damn form already!</p>
+
 <form action="/auth/register" method="post">
-    <label for="email">Email</label>
-    <input type="email" name="email" value="" id="email">
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password">
-    <label for="verificaton">Verify password</label>
-    <input type="password" name="verification" id="verification">
-    <input type="submit" value="Submit">
+    <fieldset>
+        <div class="form-group">
+
+            <label for="email">Email</label>
+            <input class="form-control" type="email" name="email" value="" id="email">
+            <%- include('./partials/errors.ejs', { errors: errors, attribute: 'email'}) %>
+        
+            <label for="password">Password</label>
+            <input class="form-control" type="password" name="password" id="password">
+            <%- include('./partials/errors.ejs', { errors: errors, attribute: 'password'}) %>
+            
+            <label for="verificaton">Verify password</label>
+            <input class="form-control" type="password" name="verification" id="verification">
+            <%- include('./partials/errors.ejs', { errors: errors, attribute: 'verification'}) %>
+            
+        </div>
+        
+            <input class="btn btn-primary" type="submit" value="Submit">
+
+    </fieldset>
 </form>
 <%- include('./partials/footer.ejs') %>

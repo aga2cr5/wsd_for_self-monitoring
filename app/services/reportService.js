@@ -4,8 +4,7 @@ import {
   required,
   isNumber,
   maxNumber,
-  minNumber,
-  isDate
+  minNumber
 } from "../deps.js";
 
 
@@ -14,7 +13,7 @@ const getReports = async(user_id) => {
   if (result && result.rowCount > 0) {
     return result.rowsOfObjects();
   }
-  return 'No reports available';
+  return [];
 }
 
 
@@ -23,15 +22,14 @@ const getOneReport = async(user_id, report_date) => {
   if (result && result.rowCount > 0) {
     return result.rowsOfObjects()[0];
   }
-  return 'No report available for the date specified';
+  return [];
 }
 
 
 const validationRulesMorning = {
   duration: [required, isNumber, minNumber(0), maxNumber(24)],
   quality: [required, isNumber, minNumber(1), maxNumber(5)],
-  mood: [required, isNumber, minNumber(1), maxNumber(5)],
-  date: [isDate]
+  mood: [required, isNumber, minNumber(1), maxNumber(5)]
 };
 
 
@@ -40,12 +38,11 @@ const validationRulesEvening = {
   duration: [required, isNumber, minNumber(0), maxNumber(24)],
   regularity: [required, isNumber, minNumber(1), maxNumber(5)],
   quality: [required, isNumber, minNumber(1), maxNumber(5)],
-  mood: [required, isNumber, minNumber(1), maxNumber(5)],
-  date: [isDate]
+  mood: [required, isNumber, minNumber(1), maxNumber(5)]
 };
 
 
-const dataMorning = {
+let dataMorning = {
   duration: '',
   quality: '',
   mood: '',
@@ -55,7 +52,7 @@ const dataMorning = {
 };
 
 
-const dataEvening = {
+let dataEvening = {
   time: '',
   duration: '',
   regularity: '',
@@ -68,23 +65,48 @@ const dataEvening = {
 
 
 const getReportDataMorning = async(request) => {
-  if (request) {
-      const body = request.body();
-      const params = await body.value;
-    
-      //adds params to dataMorning object
-      dataMorning.duration = Number(params.get('sleep_duration'));
-      dataMorning.quality = Number(params.get('sleep_quality'));
-      dataMorning.mood = Number(params.get('generic_mood_morning'));
-      dataMorning.morning_or_evening = params.get('morning_or_evening');
+  //tyhjennetään dataMorning objekti aina uuden post kutsun alussa
+  dataMorning = {
+    duration: '',
+    quality: '',
+    mood: '',
+    morning_or_evening: '',
+    date: '',
+    errors: null
+  };
 
-      dataMorning.date = params.get('date');
+  if (request) {
+    const body = request.body();
+    const params = await body.value;
+  
+    //adds params to dataMorning object
+    dataMorning.duration = Number(params.get('sleep_duration'));
+    dataMorning.quality = Number(params.get('sleep_quality'));
+    dataMorning.mood = Number(params.get('generic_mood_morning'));
+    dataMorning.morning_or_evening = params.get('morning_or_evening');
+    //dataMorning.date = params.get('date');
+    if (params.has('date')) {
+      console.log(params.get('date'));
+      dataMorning.date = new Date(params.get('date'));
+    }
   }
   return dataMorning;
 }
 
 
 const getReportDataEvening = async(request) => {
+  //tyhjennetään dataEvening objekti aina uuden post kutsun alussa
+  dataEvening = {
+    time: '',
+    duration: '',
+    regularity: '',
+    quality: '',
+    mood: '',
+    morning_or_evening: '',
+    date: '',
+    errors: null
+  };
+
   if (request) {
     const body = request.body();
     const params = await body.value;
@@ -96,16 +118,25 @@ const getReportDataEvening = async(request) => {
     dataEvening.quality = Number(params.get('quality_of_eating'));
     dataEvening.mood = Number(params.get('generic_mood_evening'));
     dataEvening.morning_or_evening = params.get('morning_or_evening');
-
-
-    //MIGHT HAVE TO CONVERT THIS TO DATE TYPE ---> PROBABLY A STRING NOW AND THAT MIGHT MESS SOMETHING UP
-    dataEvening.date = params.get('date');
+    //dataEvening.date = params.get('date');
+    if (params.has('date')) {
+      console.log(params.get('date'));
+      dataEvening.date = new Date(params.get('date'));
+    }
   }
   return dataEvening;
 }
 
 
 const setReport = async(request, session) => {
+
+  //FUNKTIO ANTAA ERRORIN JOS YRITTÄä MERKITÄ TULEVALLE PÄIVÄMÄÄRÄLLE RAPORTTIA
+  //SAATTAA JOHTUA SIITÄ, ETTÄ DATA OBJEKTI ALUSTETAAN AINA GETREPORTDATA FUNKTIOSSA.
+  //VOISIKO SIIS OLLA, ETTÄ ALEMPANA DATAMORNING.ERRORS.DATE = {"JOTAIN": "JOTAINM_MUUTA"};
+  //EI SAISI "YHTEYTTÄ" DATAOBJEKTIIN
+
+
+
   const dataMorning = await getReportDataMorning(request);
   const [morningPasses, morningErrors] = await validate(dataMorning, validationRulesMorning);
   if (!morningPasses) {
@@ -119,21 +150,29 @@ const setReport = async(request, session) => {
   }
 
   //asettaa oikean päivän ja hakee käyttäjän user_id:n
-  let dateObj = new Date();
-  const report_date = `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDay()}`;
+  let dateNowObj = new Date();
+  const report_date = `${dateNowObj.getFullYear()}-${dateNowObj.getMonth() + 1}-${dateNowObj.getDate()}`;
   const user_id = (await session.get('user')).id;
   
   console.log(dataMorning);
-  console.log(dataEvening);
 
   if (dataMorning.morning_or_evening === 'morning') {
-
+    //PÄIVÄRAPORTTI
     //jos ei ole erroreita niin lähetetään raportti tietokantaan
     if (!dataMorning.errors) {
 
-      //jos on annettu parametrinä mennyt päivämäärä, merkataan raportti kyseiselle päivämäärälle
-      if (dataMorning.date && dataMorning.date < report_date) {
 
+      //MOLEMPIEN TÄYTYY OLLA DATE OBJECTEJA, JOTTA NIITÄ VOIDAAN VERTAILLA
+      console.log('dataMorning date:');
+      console.log(dataMorning.date);
+      console.log(typeof dataMorning.date);
+
+      console.log('report date:');
+      console.log(report_date);
+      console.log(typeof dateNowObj);
+      //jos on annettu parametrinä mennyt päivämäärä, merkataan raportti kyseiselle päivämäärälle
+      if (dataMorning.date && dataMorning.date < dateNowObj) {
+        console.log('date on the past');
         //tarkistaa mikäli kyseinen päivä on jo kirjattuna tietokantaan
         const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", dataMorning.date, user_id);
         if (result && result.rowCount > 0) {
@@ -161,12 +200,14 @@ const setReport = async(request, session) => {
                               dataMorning.quality,
                               dataMorning.mood);
         }
-      } else if (dataMorning.date && dataMorning.date > report_date) {
+      } else if (dataMorning.date && dataMorning.date > dateNowObj) {
+          console.log('date in the future');
           dataMorning.errors.date = {"isLarger": "date can not be a future date"};
           return dataMorning;
 
       } else {
         //jos päivää ei spesifioitu lomakkeessa, käytetään suoraan tätä päivää
+        console.log('day not specified. checks if entry found from database form current date');
         const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", report_date, user_id);
         if (result && result.rowCount > 0) {
           await executeQuery(`UPDATE reports SET
@@ -180,6 +221,7 @@ const setReport = async(request, session) => {
                               report_date,
                               user_id);
         } else {
+          console.log('if not then we set new report');
           await executeQuery(`INSERT INTO reports (
                               user_id,
                               sleep_duration,
@@ -197,11 +239,13 @@ const setReport = async(request, session) => {
     }
 
   } else {
+    //ILTARAPORTTI
+    console.log('iltaraportti');
     if (!dataEvening.errors) {
 
       //jos on annettu parametrinä mennyt päivämäärä, merkataan raportti kyseiselle päivämäärälle
-      if (dataEvening.date && dataEvening.date < report_date) {
-
+      if (dataEvening.date && dataEvening.date < dateNowObj) {
+        console.log('iltaraportti; given date is past');
         //tarkistaa mikäli kyseiseltä päivältä on merkattuna jo illan raportti tietokantaan
         const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", dataEvening.date, user_id);
         if (result && result.rowCount > 0) {
@@ -242,6 +286,7 @@ const setReport = async(request, session) => {
           return dataEvening;
 
       } else {
+        console.log('iltaraportti; no given date');
         //tarkistaa mikäli kyseiseltä päivältä on merkattuna jo illan raportti tietokantaan
         //jos päivää ei spesifioitu lomakkeessa, käytetään suoraan tätä päivää
         const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", report_date, user_id);

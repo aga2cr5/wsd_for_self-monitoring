@@ -19,14 +19,14 @@
                     <th>Sleep quality</th>
                     <th>Morning mood</th>
                     <th>Sport and Exercise</th>
-                    <th>Studying</th>
+                    <th>Studying time</th>
                     <th>Regularity of eating</th>
                     <th>Quality of eating</th>
                     <th>Evening mood</th>
                 </tr>
             </thead>
             <tbody>
-            <% if (reports) { %>
+            <% if (reports && reports.length > 0) { %>
                 <% reports.forEach((report) => { %>
                     <tr> <% const date = (String(report.report_date)).split('00'); %>
                         <td><%= date[0] %></td>
@@ -40,7 +40,11 @@
                         <td><%= report.generic_mood_evening %></td>
                     </tr>
                 <% }); %>
-            <% } %>
+            <% } else { %>
+                <tr>
+                    <td colspan="8">No reports available</td>
+                </tr>
+           <% } %>
             </tbody>
         </table>
     

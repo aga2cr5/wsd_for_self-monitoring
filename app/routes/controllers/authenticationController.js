@@ -18,7 +18,7 @@ const loginData = {
 
 
 const showRegisterForm = ({render}) => {
-    render('register.ejs', registerData);
+    render('register.ejs', { data: registerData });
 }
 
 
@@ -30,7 +30,7 @@ const showLoginForm = ({render}) => {
 const submitRegisterForm = async({request, response, render}) => {
     const result = await authenticationService.register(request);
     if (result) {
-        render('register.ejs', result);
+        render('register.ejs', { data: result });
     } else {
         response.status = 200;
         response.body = 'Registration successful!';
@@ -44,7 +44,7 @@ const submitLoginForm = async({request, response, render, session}) => {
         render('login.ejs', result);
     } else {
         response.status = 200;
-        response.redirect('/landing');
+        response.redirect('/behavior/reporting');
     }
 }
 

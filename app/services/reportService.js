@@ -7,9 +7,94 @@ import {
   minNumber
 } from "../deps.js";
 
+const getApiReports = async() => {
+  const result = {};
+
+  result.sleep_duration = (await executeQuery(`SELECT AVG(sleep_duration)::numeric(10,1)FROM reports
+                                            WHERE report_date BETWEEN current_date - INTEGER '7' AND current_date;`)).rowsOfObjects()[0];
+
+  result.exercise_time = (await executeQuery(`SELECT AVG(time_spent_on_sports_n_exercise)::numeric(10,1) FROM reports
+                                            WHERE report_date BETWEEN current_date - INTEGER '7' AND current_date;`)).rowsOfObjects()[0];
+
+  result.study_time = (await executeQuery(`SELECT AVG(time_spent_studying)::numeric(10,1) FROM reports
+                                            WHERE report_date BETWEEN current_date - INTEGER '7' AND current_date;`)).rowsOfObjects()[0];
+
+  result.sleep_quality = (await executeQuery(`SELECT AVG(sleep_quality)::numeric(10,1) FROM reports
+                                            WHERE report_date BETWEEN current_date - INTEGER '7' AND current_date;`)).rowsOfObjects()[0];
+
+  result.mood_morning = (await executeQuery(`SELECT AVG(generic_mood_morning)::numeric(10,1) FROM reports
+                                            WHERE report_date BETWEEN current_date - INTEGER '7' AND current_date;`)).rowsOfObjects()[0];
+
+  result.mood_evening = (await executeQuery(`SELECT AVG(generic_mood_evening)::numeric(10,1) FROM reports
+                                            WHERE report_date BETWEEN current_date - INTEGER '7' AND current_date;`)).rowsOfObjects()[0];
+
+  if (result) {
+    return result;
+  } else {
+    return [];
+  }
+}
+
+const getApiReportsByDate = async(date) => {
+  const result = {};
+
+  result.sleep_duration = (await executeQuery(`SELECT AVG(sleep_duration)::numeric(10,1) FROM reports
+                                            WHERE report_date = $1;`, date)).rowsOfObjects()[0];
+
+  result.exercise_time = (await executeQuery(`SELECT AVG(time_spent_on_sports_n_exercise)::numeric(10,1) FROM reports
+                                            WHERE report_date = $1;`, date)).rowsOfObjects()[0];
+
+  result.study_time = (await executeQuery(`SELECT AVG(time_spent_studying)::numeric(10,1) FROM reports
+                                            WHERE report_date = $1;`, date)).rowsOfObjects()[0];
+
+  result.sleep_quality = (await executeQuery(`SELECT AVG(sleep_quality)::numeric(10,1) FROM reports
+                                            WHERE report_date = $1;`, date)).rowsOfObjects()[0];
+
+  result.mood_morning = (await executeQuery(`SELECT AVG(generic_mood_morning)::numeric(10,1) FROM reports
+                                            WHERE report_date = $1;`, date)).rowsOfObjects()[0];
+
+  result.mood_evening = (await executeQuery(`SELECT AVG(generic_mood_evening)::numeric(10,1) FROM reports
+                                            WHERE report_date = $1;`, date)).rowsOfObjects()[0];
+
+  if (result) {
+    return result;
+  } else {
+    return [];
+  }
+}
+
+
+const getSummary = async(user_id) => {
+  const result = {};
+
+  result.sleep_duration = (await executeQuery(`SELECT AVG(sleep_duration)::numeric(10,1)FROM reports
+                                            WHERE user_id = $1 AND report_date BETWEEN current_date - INTEGER '7' AND current_date;`, user_id)).rowsOfObjects()[0];
+
+  result.exercise_time = (await executeQuery(`SELECT AVG(time_spent_on_sports_n_exercise)::numeric(10,1) FROM reports
+                                            WHERE user_id = $1 AND report_date BETWEEN current_date - INTEGER '7' AND current_date;`, user_id)).rowsOfObjects()[0];
+
+  result.study_time = (await executeQuery(`SELECT AVG(time_spent_studying)::numeric(10,1) FROM reports
+                                            WHERE user_id = $1 AND report_date BETWEEN current_date - INTEGER '7' AND current_date;`, user_id)).rowsOfObjects()[0];
+
+  result.sleep_quality = (await executeQuery(`SELECT AVG(sleep_quality)::numeric(10,1) FROM reports
+                                            WHERE user_id = $1 AND report_date BETWEEN current_date - INTEGER '7' AND current_date;`, user_id)).rowsOfObjects()[0];
+
+  result.mood_morning = (await executeQuery(`SELECT AVG(generic_mood_morning)::numeric(10,1) FROM reports
+                                            WHERE user_id = $1 AND report_date BETWEEN current_date - INTEGER '7' AND current_date;`, user_id)).rowsOfObjects()[0];
+
+  result.mood_evening = (await executeQuery(`SELECT AVG(generic_mood_evening)::numeric(10,1) FROM reports
+                                            WHERE user_id = $1 AND report_date BETWEEN current_date - INTEGER '7' AND current_date;`, user_id)).rowsOfObjects()[0];
+
+  if (result) {
+    return result;
+  } else {
+    return [];
+  }
+}
+
 
 const getReports = async(user_id) => {
-  const result = await executeQuery("SELECT * FROM reports WHERE user_id = $1;", user_id);
+  const result = await executeQuery("SELECT * FROM reports WHERE user_id = $1 ORDER BY report_date DESC;", user_id);
   if (result && result.rowCount > 0) {
     return result.rowsOfObjects();
   }
@@ -27,9 +112,9 @@ const getOneReport = async(user_id, report_date) => {
 
 
 const validationRulesMorning = {
-  duration: [required, isNumber, minNumber(0), maxNumber(24)],
-  quality: [required, isNumber, minNumber(1), maxNumber(5)],
-  mood: [required, isNumber, minNumber(1), maxNumber(5)]
+  sleep_duration: [required, isNumber, minNumber(0), maxNumber(24)],
+  sleep_quality: [required, isNumber, minNumber(1), maxNumber(5)],
+  morning_mood: [required, isNumber, minNumber(1), maxNumber(5)]
 };
 
 
@@ -38,17 +123,17 @@ const validationRulesEvening = {
   duration: [required, isNumber, minNumber(0), maxNumber(24)],
   regularity: [required, isNumber, minNumber(1), maxNumber(5)],
   quality: [required, isNumber, minNumber(1), maxNumber(5)],
-  mood: [required, isNumber, minNumber(1), maxNumber(5)]
+  evening_mood: [required, isNumber, minNumber(1), maxNumber(5)]
 };
 
 
 let dataMorning = {
-  duration: '',
-  quality: '',
-  mood: '',
+  sleep_duration: '',
+  sleep_quality: '',
+  morning_mood: '',
   morning_or_evening: '',
-  date: '',
-  errors: null
+  date_morning: '',
+  errors: {}
 };
 
 
@@ -57,37 +142,29 @@ let dataEvening = {
   duration: '',
   regularity: '',
   quality: '',
-  mood: '',
+  evening_mood: '',
   morning_or_evening: '',
-  date: '',
-  errors: null
+  date_evening: '',
+  errors: {}
 };
 
 
 const getReportDataMorning = async(request) => {
-  //tyhjennetään dataMorning objekti aina uuden post kutsun alussa
-  dataMorning = {
-    duration: '',
-    quality: '',
-    mood: '',
-    morning_or_evening: '',
-    date: '',
-    errors: null
-  };
+  //tyhjennetään dataMorning.errors objekti aina uuden post kutsun alussa
+  dataMorning.errors = {};
 
   if (request) {
     const body = request.body();
     const params = await body.value;
   
     //adds params to dataMorning object
-    dataMorning.duration = Number(params.get('sleep_duration'));
-    dataMorning.quality = Number(params.get('sleep_quality'));
-    dataMorning.mood = Number(params.get('generic_mood_morning'));
+    dataMorning.sleep_duration = Number(params.get('sleep_duration'));
+    dataMorning.sleep_quality = Number(params.get('sleep_quality'));
+    dataMorning.morning_mood = Number(params.get('generic_mood_morning'));
     dataMorning.morning_or_evening = params.get('morning_or_evening');
     //dataMorning.date = params.get('date');
-    if (params.has('date')) {
-      console.log(params.get('date'));
-      dataMorning.date = new Date(params.get('date'));
+    if (params.has('date_morning')) {
+      dataMorning.date_morning = new Date(params.get('date_morning'));
     }
   }
   return dataMorning;
@@ -95,17 +172,8 @@ const getReportDataMorning = async(request) => {
 
 
 const getReportDataEvening = async(request) => {
-  //tyhjennetään dataEvening objekti aina uuden post kutsun alussa
-  dataEvening = {
-    time: '',
-    duration: '',
-    regularity: '',
-    quality: '',
-    mood: '',
-    morning_or_evening: '',
-    date: '',
-    errors: null
-  };
+  //tyhjennetään dataEvening.errors objekti aina uuden post kutsun alussa
+  dataEvening.errors = {};
 
   if (request) {
     const body = request.body();
@@ -116,12 +184,11 @@ const getReportDataEvening = async(request) => {
     dataEvening.duration = Number(params.get('time_spent_studying'));
     dataEvening.regularity = Number(params.get('regularity_of_eating'));
     dataEvening.quality = Number(params.get('quality_of_eating'));
-    dataEvening.mood = Number(params.get('generic_mood_evening'));
+    dataEvening.evening_mood = Number(params.get('generic_mood_evening'));
     dataEvening.morning_or_evening = params.get('morning_or_evening');
     //dataEvening.date = params.get('date');
-    if (params.has('date')) {
-      console.log(params.get('date'));
-      dataEvening.date = new Date(params.get('date'));
+    if (params.has('date_evening')) {
+      dataEvening.date_evening = new Date(params.get('date_evening'));
     }
   }
   return dataEvening;
@@ -129,13 +196,6 @@ const getReportDataEvening = async(request) => {
 
 
 const setReport = async(request, session) => {
-
-  //FUNKTIO ANTAA ERRORIN JOS YRITTÄä MERKITÄ TULEVALLE PÄIVÄMÄÄRÄLLE RAPORTTIA
-  //SAATTAA JOHTUA SIITÄ, ETTÄ DATA OBJEKTI ALUSTETAAN AINA GETREPORTDATA FUNKTIOSSA.
-  //VOISIKO SIIS OLLA, ETTÄ ALEMPANA DATAMORNING.ERRORS.DATE = {"JOTAIN": "JOTAINM_MUUTA"};
-  //EI SAISI "YHTEYTTÄ" DATAOBJEKTIIN
-
-
 
   const dataMorning = await getReportDataMorning(request);
   const [morningPasses, morningErrors] = await validate(dataMorning, validationRulesMorning);
@@ -153,38 +213,25 @@ const setReport = async(request, session) => {
   let dateNowObj = new Date();
   const report_date = `${dateNowObj.getFullYear()}-${dateNowObj.getMonth() + 1}-${dateNowObj.getDate()}`;
   const user_id = (await session.get('user')).id;
-  
-  console.log(dataMorning);
 
   if (dataMorning.morning_or_evening === 'morning') {
     //PÄIVÄRAPORTTI
     //jos ei ole erroreita niin lähetetään raportti tietokantaan
-    if (!dataMorning.errors) {
-
-
-      //MOLEMPIEN TÄYTYY OLLA DATE OBJECTEJA, JOTTA NIITÄ VOIDAAN VERTAILLA
-      console.log('dataMorning date:');
-      console.log(dataMorning.date);
-      console.log(typeof dataMorning.date);
-
-      console.log('report date:');
-      console.log(report_date);
-      console.log(typeof dateNowObj);
+    if (Object.entries(dataMorning.errors).length === 0) {
       //jos on annettu parametrinä mennyt päivämäärä, merkataan raportti kyseiselle päivämäärälle
-      if (dataMorning.date && dataMorning.date < dateNowObj) {
-        console.log('date on the past');
+      if (dataMorning.date_morning && dataMorning.date_morning < dateNowObj) {
         //tarkistaa mikäli kyseinen päivä on jo kirjattuna tietokantaan
-        const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", dataMorning.date, user_id);
+        const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", dataMorning.date_morning, user_id);
         if (result && result.rowCount > 0) {
           await executeQuery(`UPDATE reports SET
                               sleep_duration = $1,
                               sleep_quality = $2,
                               generic_mood_morning = $3
                               WHERE report_date = $4 AND user_id = $5;`,
-                              dataMorning.duration,
-                              dataMorning.quality,
-                              dataMorning.mood,
-                              dataMorning.date,
+                              dataMorning.sleep_duration,
+                              dataMorning.sleep_quality,
+                              dataMorning.morning_mood,
+                              dataMorning.date_morning,
                               user_id);
         } else {
           await executeQuery(`INSERT INTO reports (
@@ -194,20 +241,18 @@ const setReport = async(request, session) => {
                               sleep_quality,
                               generic_mood_morning)
                               VALUES ($1, $2, $3, $4, $5);`,
-                              dataMorning.date,
+                              dataMorning.date_morning,
                               user_id,
-                              dataMorning.duration,
-                              dataMorning.quality,
-                              dataMorning.mood);
+                              dataMorning.sleep_duration,
+                              dataMorning.sleep_quality,
+                              dataMorning.morning_mood);
         }
-      } else if (dataMorning.date && dataMorning.date > dateNowObj) {
-          console.log('date in the future');
-          dataMorning.errors.date = {"isLarger": "date can not be a future date"};
+      } else if (dataMorning.date_morning && dataMorning.date_morning > dateNowObj) {
+          dataMorning.errors.date_morning = {'date_morning':'date can not be a future date'};
           return dataMorning;
 
       } else {
         //jos päivää ei spesifioitu lomakkeessa, käytetään suoraan tätä päivää
-        console.log('day not specified. checks if entry found from database form current date');
         const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", report_date, user_id);
         if (result && result.rowCount > 0) {
           await executeQuery(`UPDATE reports SET
@@ -215,13 +260,12 @@ const setReport = async(request, session) => {
                               sleep_quality = $2,
                               generic_mood_morning = $3
                               WHERE report_date = $4 AND user_id = $5;`,
-                              dataMorning.duration,
-                              dataMorning.quality,
-                              dataMorning.mood,
+                              dataMorning.sleep_duration,
+                              dataMorning.sleep_quality,
+                              dataMorning.morning_mood,
                               report_date,
                               user_id);
         } else {
-          console.log('if not then we set new report');
           await executeQuery(`INSERT INTO reports (
                               user_id,
                               sleep_duration,
@@ -229,9 +273,9 @@ const setReport = async(request, session) => {
                               generic_mood_morning)
                               VALUES ($1, $2, $3, $4);`,
                               user_id,
-                              dataMorning.duration,
-                              dataMorning.quality,
-                              dataMorning.mood);
+                              dataMorning.sleep_duration,
+                              dataMorning.sleep_quality,
+                              dataMorning.morning_mood);
         }
       }
     } else {
@@ -240,14 +284,11 @@ const setReport = async(request, session) => {
 
   } else {
     //ILTARAPORTTI
-    console.log('iltaraportti');
-    if (!dataEvening.errors) {
-
+    if (Object.entries(dataEvening.errors).length === 0) {
       //jos on annettu parametrinä mennyt päivämäärä, merkataan raportti kyseiselle päivämäärälle
-      if (dataEvening.date && dataEvening.date < dateNowObj) {
-        console.log('iltaraportti; given date is past');
+      if (dataEvening.date_evening && dataEvening.date_evening < dateNowObj) {
         //tarkistaa mikäli kyseiseltä päivältä on merkattuna jo illan raportti tietokantaan
-        const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", dataEvening.date, user_id);
+        const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", dataEvening.date_evening, user_id);
         if (result && result.rowCount > 0) {
           await executeQuery(`UPDATE reports SET
                               time_spent_on_sports_n_exercise = $1,
@@ -260,8 +301,8 @@ const setReport = async(request, session) => {
                               dataEvening.duration,
                               dataEvening.regularity,
                               dataEvening.quality,
-                              dataEvening.mood,
-                              dataEvening.date,
+                              dataEvening.evening_mood,
+                              dataEvening.date_evening,
                               user_id); 
         } else {
           await executeQuery(`INSERT INTO reports (
@@ -272,21 +313,20 @@ const setReport = async(request, session) => {
                             regularity_of_eating,
                             quality_of_eating,
                             generic_mood_evening)
-                            VALUES ($1, $2, $3, $4, $5);`,
-                            dataEvening.date,
+                            VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+                            dataEvening.date_evening,
                             user_id,
                             dataEvening.time,
                             dataEvening.duration,
                             dataEvening.regularity,
                             dataEvening.quality,
-                            dataEvening.mood);
+                            dataEvening.evening_mood);
         }
-      } else if (dataEvening.date && dataEvening.date > report_date) {
-          dataEvening.errors.date = {"isLarger": "date can not be a future date"};
+      } else if (dataEvening.date_evening && dataEvening.date_evening > dateNowObj) {
+          dataEvening.errors.date_evening = {"isLarger": "date can not be a future date"};
           return dataEvening;
 
       } else {
-        console.log('iltaraportti; no given date');
         //tarkistaa mikäli kyseiseltä päivältä on merkattuna jo illan raportti tietokantaan
         //jos päivää ei spesifioitu lomakkeessa, käytetään suoraan tätä päivää
         const result = await executeQuery("SELECT * FROM reports WHERE report_date = $1 AND user_id = $2;", report_date, user_id);
@@ -302,7 +342,7 @@ const setReport = async(request, session) => {
                               dataEvening.duration,
                               dataEvening.regularity,
                               dataEvening.quality,
-                              dataEvening.mood,
+                              dataEvening.evening_mood,
                               report_date,
                               user_id); 
         } else {
@@ -313,21 +353,20 @@ const setReport = async(request, session) => {
                             regularity_of_eating,
                             quality_of_eating,
                             generic_mood_evening)
-                            VALUES ($1, $2, $3, $4);`,
+                            VALUES ($1, $2, $3, $4, $5, $6);`,
                             user_id,
                             dataEvening.time,
                             dataEvening.duration,
                             dataEvening.regularity,
                             dataEvening.quality,
-                            dataEvening.mood);
+                            dataEvening.evening_mood);
         }
       }
     } else {
       return dataEvening;
     }
-
   }
 }
 
 
-export { getReports, getOneReport, setReport };
+export { getReports, getOneReport, setReport, getSummary, getApiReports, getApiReportsByDate };

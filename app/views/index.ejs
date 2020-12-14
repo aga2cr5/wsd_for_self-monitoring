@@ -1,7 +1,19 @@
 <%- include('./partials/header.ejs') %>
 <h1>Self Monitoring App</h1>
+
 <a href="/auth/login">Login</a>
-<a href="/auth/register">Register</a><br>
+<a href="/auth/registration">Register</a><br>
 <p>And of course in case you are logged in...</p>
-<a href="/behavior/reporting">Do some reporting on you daily behavior!</a>
+<a href="/behavior/reporting">Do some reporting on you daily behavior!</a><br>
+
+<p>The purpose of this web app is to allow easy and accessible behavior reporting for everyone. Not everyone has the money or
+    access for expensive apps so we decided to offer this free to use way of keeping up with yourself. Got doupts? Don't hesitate give it a try!</p>
+    <p>I promese you wont regret it.</p>
+    <p id="otherwise">maybe...</p><br>
+    
+<p><b>Average mood from today and yesterday:</b></p>
+<p><%= data.avg %> </p><br>
+<p><%= data.thingsLooking %></p>
+
+
 <%- include('./partials/footer.ejs') %>

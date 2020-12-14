@@ -6,12 +6,12 @@ import * as reportService from "../../services/reportService.js";
 const data = {
   sleep_duration: '',
   sleep_quality: '',
-  generic_mood_morning: '',
-  time_spent_on_sports_n_exercise: '',
-  time_spent_studying: '',
-  regularity_of_eating: '',
-  quality_of_eating: '',
-  generic_mood_evening: '',
+  morning_mood: '',
+  time: '',
+  duration: '',
+  regularity: '',
+  quality: '',
+  evening_mood: '',
   date: '',
   errors: null
 };
@@ -27,6 +27,20 @@ const showReports = async({render, session}) => {
           data: data,
           user_id: user_id
         });
+}
+
+
+
+const getSummary = async({render, session}) => {
+  const user_id = (await session.get('user')).id;
+  const email = (await session.get('user')).email;
+
+  render('summary.ejs', {
+          summary: await reportService.getSummary(user_id),
+          email: email,
+          user_id: user_id
+       });
+  
 }
 
 
@@ -50,6 +64,5 @@ const addReport = async({response, request, render, session}) => {
   }
 }
 
-//lisää getSummary funktio
 
-export { showReports, addReport }
+export { showReports, addReport, getSummary }

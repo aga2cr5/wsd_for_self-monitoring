@@ -1,7 +1,7 @@
 <%- include('./partials/header.ejs') %>
 <h1>Login</h1><br>
 <p>Fill in and submit the following form to login and use our awesome Self-Moneytoring(tm) web app.</p>
-<a href="/auth/register">If you haven't already registered to this site, please, go to the registeration page.</a><br>
+<a href="/auth/registration">If you haven't already registered to this site, please, go to the registeration page.</a><br>
 <p id="otherwise">Otherwise go ahead, fill the god damn form already!</p>
 
 
@@ -15,7 +15,9 @@
         
             <label for="password">Password</label>
             <input class="form-control" type="password" name="password" id="password">
-            <%- include('./partials/errors.ejs', { errors: errors, attribute: 'password'}) %>
+            <%- include('./partials/errors.ejs', { errors: errors, attribute: 'password'}) %> <br>
+
+            <%- include('./partials/errors.ejs', { errors: errors, attribute: 'overall'}) %>
         
             <input class="btn btn-primary" type="submit" value="Submit">
 

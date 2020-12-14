@@ -20,11 +20,13 @@ const registerationData = {
     email: '',
     password: '',
     verification: '',
-    errors: null
+    errors: {}
 };
 
 
 const getRegisterationData = async(request) => {
+    registerationData.errors = {};
+
     if (request) {
         const body = request.body();
         const params = await body.value;
@@ -54,7 +56,7 @@ const register = async(request) => {
       registerationData.errors.email = {"isReserved": "email is already reserved"};
     }
 
-    if (!registerationData.errors) {
+    if (Object.entries(registerationData.errors).length === 0) {
         const hash = await bcrypt.hash(registerationData.password);
         await executeQuery("INSERT INTO users (email, password) VALUES ($1, $2);", registerationData.email, hash);
     } else {
@@ -72,11 +74,13 @@ const validationRulesLogin = {
 const authenticationData = {
     email: '',
     password: '',
-    errors: null
+    errors: {}
 };
 
 
 const getAuthenticationData = async(request) => {
+    authenticationData.errors = {};
+    
     if (request) {
         const body = request.body();
         const params = await body.value;
@@ -104,6 +108,7 @@ const login = async(request, session) => {
     
         const passwordCorrect = await bcrypt.compare(authenticationData.password, hash);
         if (!passwordCorrect) {
+            authenticationData.errors.overall = {"valid": "invalid email or password"}
             return authenticationData;
         }
     
@@ -114,6 +119,7 @@ const login = async(request, session) => {
         });
 
     } else {
+        authenticationData.errors.overall = {"valid": "invalid email or password"}
         return authenticationData;
     }
 }

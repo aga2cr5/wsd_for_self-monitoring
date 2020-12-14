@@ -12,7 +12,5 @@ if (Deno.env.get('TEST_ENVIRONMENT')) {
   };
 }
 
-const redirectSleepTime = 10 * 1000;
 
-
-export { config, redirectSleepTime }; 
+export { config }; 

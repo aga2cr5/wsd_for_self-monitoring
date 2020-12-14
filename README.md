@@ -35,6 +35,7 @@ CREATE TABLE reports (
 
 Ok, that should do the job. After this you need to change your database credential to the applications config file. This file can be found from app/config/config.js.
 
+In the app deployed in Heroku we use connection pooling but for the sake of limited connections they are emmitted from this version of the Self-Moneytoring app. However, code used in Heroku version is still visible in /database/database.js although it's commented out.
 
 ## Guidelines
 One should make account at https://self-moneytoring.herokuapp.com/auth/registration. After that login and do some reporting as the app is ment for that. Also hacking, pentesting, crash testing, etc. is not allowed.

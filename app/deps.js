@@ -4,7 +4,8 @@ import { Client } from "https://deno.land/x/postgres@v0.4.5/mod.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.2.4/mod.ts";
 import { Session } from "https://deno.land/x/session@v1.0.0/mod.ts";
 import { oakCors } from "https://deno.land/x/cors@v1.2.1/mod.ts";
-import { Pool } from "https://deno.land/x/postgres@v0.4.5/mod.ts";
+
+//import { Pool } from "https://deno.land/x/postgres@v0.4.5/mod.ts";
 
 import {
     validate,
@@ -25,7 +26,8 @@ export { Client };
 export { bcrypt };
 export { Session };
 export { oakCors };
-export { Pool };
+
+//export { Pool };
 
 export {
     validate,
